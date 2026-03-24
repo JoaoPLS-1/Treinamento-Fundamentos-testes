@@ -52,18 +52,68 @@ function calcularReserva(reserva: IReserva): IResultadoReserva {
     //
     // Passos sugeridos:
     // 1. Buscar o quarto pelo quartoId
-    // 2. Validar: quarto existe, noites entre 1-30, hóspedes dentro da capacidade
-    // 3. Calcular valor da diária base (precoNoite do quarto)
-    // 4. Se alta temporada (mes 12, 1 ou 2): diária *= 1.30
+    // 2. Validar: quarto existe, noites entre 1-30, hóspedes dentro da capacidade ok
+    // 3. Calcular valor da diária base (precoNoite do quarto) ok
+    // 4. Se alta temporada (mes 12, 1 ou 2): diária *= 1.30 ok
     // 5. Se 3+ noites: desconto = 10% sobre (diária × noites)
     // 6. Se café da manhã: adicionar R$ 30 por noite
     // 7. Calcular valorTotal: (diária × noites) - desconto + (café × noites)
 
+    const quarto = quartos.find(quartosBusca => quartosBusca.id === reserva.quartoId)
+    let diariaBase = 0
+    let desconto = 0
+    let valorTotal = 0
+    if (!quarto) {
+        return {
+            valorDiaria: 0,
+            valorTotal: 0,
+            desconto: 0,
+            ehValida: false
+        }
+    }
+
+    if (reserva.noites < 1 || reserva.noites > 30) {
+         return {
+            valorDiaria: 0,
+            valorTotal: 0,
+            desconto: 0,
+            ehValida: false
+        }
+    }
+
+    if(reserva.hospedes > quarto.capacidade) {
+         return {
+            valorDiaria: 0,
+            valorTotal: 0,
+            desconto: 0,
+            ehValida: false
+        }
+    }
+
+    diariaBase = quarto.tipo === 'standard' ? 150 : quarto.tipo === 'luxo' ? 300 : 0 
+
+    if(reserva.mes === 12 || reserva.mes === 1 || reserva.mes === 2){
+        diariaBase *= 1.30
+    }
+
+    if(reserva.noites >= 3) {
+        desconto = (diariaBase * reserva.noites) * 0.1
+    }
+
+    if(reserva.cafeDaManha) {
+        diariaBase = diariaBase + 30
+    }
+
+    valorTotal = (diariaBase * reserva.noites) - desconto 
+
+
+
+
     return {
-        valorDiaria: 0,
-        valorTotal: 0,
-        desconto: 0,
-        ehValida: false
+        valorDiaria: diariaBase,
+        valorTotal: valorTotal,
+        desconto: desconto,
+        ehValida: true
     }
 }
 
